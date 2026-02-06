@@ -530,13 +530,14 @@ async def reschedule_user_job(telegram_id: int, notification_time: str, context:
         job_time = time(hour=scheduled_utc.hour, minute=scheduled_utc.minute, second=scheduled_utc.second)
         logger.info(f"User {telegram_id} - Reschedule: Job time UTC (timezone-naive): {job_time}")
 
-        # Remove existing job
+        # Remove existing job(s) using PTB's API (not APScheduler's remove_job which requires job ID, not name)
         job_name = f"grade_check_user_{telegram_id}"
-        try:
-            context.job_queue.scheduler.remove_job(job_name)
+        current_jobs = context.job_queue.get_jobs_by_name(job_name)
+        for job in current_jobs:
+            job.schedule_removal()
             logger.info(f"User {telegram_id} - Reschedule: Removed existing job")
-        except Exception as e:
-            logger.info(f"User {telegram_id} - Reschedule: No existing job to remove: {e}")
+        if not current_jobs:
+            logger.info(f"User {telegram_id} - Reschedule: No existing job to remove")
 
         # Create new job with updated time
         context.job_queue.run_daily(

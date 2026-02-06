@@ -206,9 +206,9 @@ class Database:
                     'aspen_username': self._decrypt(user[1]),
                     'aspen_password': self._decrypt(user[2]),
                     'notification_method': user[3],
-                    'is_active': bool(user[4]),
-                    'created_at': user[5],
-                    'last_updated': user[6]
+                    'is_active': bool(user[5]),   # user[4] is email, user[5] is is_active
+                    'created_at': user[6],
+                    'last_updated': user[7]
                 })
 
             return result

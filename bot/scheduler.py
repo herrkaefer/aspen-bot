@@ -29,8 +29,14 @@ async def fetch_and_notify_user(context: ContextTypes.DEFAULT_TYPE):
         try:
             user_data = context.job.data
             user_id = user_data['telegram_id']
-            username = user_data['aspen_username']
-            password = user_data['aspen_password']
+
+            # Always read fresh credentials from database (not cached job data)
+            fresh_user = db.get_user(user_id)
+            if not fresh_user:
+                logger.warning(f"User {user_id} not found in database, skipping notification")
+                return
+            username = fresh_user['aspen_username']
+            password = fresh_user['aspen_password']
 
             # Log the actual execution time
             current_time = datetime.now()
